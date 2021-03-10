@@ -5,7 +5,7 @@
 
 
 CREATE FUNCTION intset_in(cstring)
-   RETURNS intset
+   RETURNS intSet
    AS '_OBJWD_/intset'
    LANGUAGE C IMMUTABLE STRICT;
 
@@ -18,7 +18,7 @@ CREATE FUNCTION intset_out(intSet)
 
 
 
-CREATE TYPE intset (
+CREATE TYPE intSet (
    input = intset_in,
    output = intset_out
 );
@@ -37,7 +37,7 @@ CREATE FUNCTION intset_contain(integer, intSet)
 
 CREATE OPERATOR ? (
    leftarg = integer,
-   rightarg = intset,
+   rightarg = intSet,
    procedure = intset_contain,
    commutator = ?
 );
@@ -53,7 +53,7 @@ CREATE FUNCTION intset_card(intSet)
 
 
 CREATE OPERATOR # (
-   rightarg = intset,
+   rightarg = intSet,
    procedure = intset_card
 );
 
@@ -68,8 +68,8 @@ CREATE FUNCTION belong_left(intSet,intSet)
 
 
 CREATE OPERATOR >@ (
-   leftarg = intset,
-   rightarg = intset,
+   leftarg = intSet,
+   rightarg = intSet,
    procedure = belong_left
 );
 
@@ -84,8 +84,8 @@ CREATE FUNCTION belong_right(intSet,intSet)
 
 
 CREATE OPERATOR @< (
-   leftarg = intset,
-   rightarg = intset,
+   leftarg = intSet,
+   rightarg = intSet,
    procedure = belong_right
 );
 
@@ -101,8 +101,8 @@ CREATE FUNCTION intset_eq(intSet,intSet)
 
 
 CREATE OPERATOR = (
-   leftarg = intset,
-   rightarg = intset,
+   leftarg = intSet,
+   rightarg = intSet,
    procedure = intset_eq
 );
 
@@ -117,8 +117,8 @@ CREATE FUNCTION intset_neq(intSet,intSet)
 
 
 CREATE OPERATOR <> (
-   leftarg = intset,
-   rightarg = intset,
+   leftarg = intSet,
+   rightarg = intSet,
    procedure = intset_neq
 );
 
@@ -127,14 +127,14 @@ CREATE OPERATOR <> (
 --intset_intersect A && B : A && B
 --
 CREATE FUNCTION intset_intersect(intSet,intSet)
-   RETURNS intset
+   RETURNS intSet
    AS '_OBJWD_/intset'
    LANGUAGE C IMMUTABLE STRICT;
 
 
 CREATE OPERATOR && (
-   leftarg = intset,
-   rightarg = intset,
+   leftarg = intSet,
+   rightarg = intSet,
    procedure = intset_intersect
 );
 
@@ -143,14 +143,14 @@ CREATE OPERATOR && (
 --intset_union A || B : A || B
 --
 CREATE FUNCTION intset_union(intSet,intSet)
-   RETURNS intset
+   RETURNS intSet
    AS '_OBJWD_/intset'
    LANGUAGE C IMMUTABLE STRICT;
 
 
 CREATE OPERATOR || (
-   leftarg = intset,
-   rightarg = intset,
+   leftarg = intSet,
+   rightarg = intSet,
    procedure = intset_union
 );
 
@@ -159,14 +159,14 @@ CREATE OPERATOR || (
 --intset_disjunction A !! B : A !! B
 --
 CREATE FUNCTION intset_disjunction(intSet,intSet)
-   RETURNS intset
+   RETURNS intSet
    AS '_OBJWD_/intset'
    LANGUAGE C IMMUTABLE STRICT;
 
 
 CREATE OPERATOR !! (
-   leftarg = intset,
-   rightarg = intset,
+   leftarg = intSet,
+   rightarg = intSet,
    procedure = intset_disjunction
 );
 
@@ -174,14 +174,14 @@ CREATE OPERATOR !! (
 --intset_difference A - B : A - B
 --
 CREATE FUNCTION intset_difference(intSet,intSet)
-   RETURNS intset
+   RETURNS intSet
    AS '_OBJWD_/intset'
    LANGUAGE C IMMUTABLE STRICT;
 
 
 CREATE OPERATOR - (
-   leftarg = intset,
-   rightarg = intset,
+   leftarg = intSet,
+   rightarg = intSet,
    procedure = intset_difference
 );
 

@@ -1,0 +1,187 @@
+
+-----------------------------
+-- Creating a new type:
+
+
+
+CREATE FUNCTION intset_in(cstring)
+   RETURNS intSet
+   AS '_OBJWD_/intSet'
+   LANGUAGE C IMMUTABLE STRICT;
+
+
+CREATE FUNCTION intset_out(intSet)
+   RETURNS cstring
+   AS '_OBJWD_/intSet'
+   LANGUAGE C IMMUTABLE STRICT;
+
+
+
+
+CREATE TYPE intSet (
+   input = intset_in,
+   output = intset_out
+);
+
+
+
+--Operators
+--
+--check countain i ? S
+--
+CREATE FUNCTION intset_contain(integer, intSet)
+   RETURNS bool
+   AS '_OBJWD_/intSet'
+   LANGUAGE C IMMUTABLE STRICT;
+
+
+CREATE OPERATOR ? (
+   leftarg = integer,
+   rightarg = intSet,
+   procedure = intset_contain,
+   commutator = ?
+);
+
+
+--
+--cardinality |S|: #S
+--
+CREATE FUNCTION intset_card(intSet)
+   RETURNS integer
+   AS '_OBJWD_/intSet'
+   LANGUAGE C IMMUTABLE STRICT;
+
+
+CREATE OPERATOR # (
+   rightarg = intSet,
+   procedure = intset_card
+);
+
+
+--
+--belong_left B belong A : A >@ B
+--
+CREATE FUNCTION belong_left(intSet,intSet)
+   RETURNS bool
+   AS '_OBJWD_/intSet'
+   LANGUAGE C IMMUTABLE STRICT;
+
+
+CREATE OPERATOR >@ (
+   leftarg = intSet,
+   rightarg = intSet,
+   procedure = belong_left
+);
+
+
+--
+--belong_right A belong B : A @< B
+--
+CREATE FUNCTION belong_right(intSet,intSet)
+   RETURNS bool
+   AS '_OBJWD_/intSet'
+   LANGUAGE C IMMUTABLE STRICT;
+
+
+CREATE OPERATOR @< (
+   leftarg = intSet,
+   rightarg = intSet,
+   procedure = belong_right
+);
+
+
+
+--
+--intset_eq A = B : A = B
+--
+CREATE FUNCTION intset_eq(intSet,intSet)
+   RETURNS bool
+   AS '_OBJWD_/intSet'
+   LANGUAGE C IMMUTABLE STRICT;
+
+
+CREATE OPERATOR = (
+   leftarg = intSet,
+   rightarg = intSet,
+   procedure = intset_eq
+);
+
+
+--
+--intset_neq A <> B : A <> B
+--
+CREATE FUNCTION intset_neq(intSet,intSet)
+   RETURNS bool
+   AS '_OBJWD_/intSet'
+   LANGUAGE C IMMUTABLE STRICT;
+
+
+CREATE OPERATOR <> (
+   leftarg = intSet,
+   rightarg = intSet,
+   procedure = intset_neq
+);
+
+
+--
+--intset_intersect A && B : A && B
+--
+CREATE FUNCTION intset_intersect(intSet,intSet)
+   RETURNS intSet
+   AS '_OBJWD_/intSet'
+   LANGUAGE C IMMUTABLE STRICT;
+
+
+CREATE OPERATOR && (
+   leftarg = intSet,
+   rightarg = intSet,
+   procedure = intset_intersect
+);
+
+
+--
+--intset_union A || B : A || B
+--
+CREATE FUNCTION intset_union(intSet,intSet)
+   RETURNS intSet
+   AS '_OBJWD_/intSet'
+   LANGUAGE C IMMUTABLE STRICT;
+
+
+CREATE OPERATOR || (
+   leftarg = intSet,
+   rightarg = intSet,
+   procedure = intset_union
+);
+
+
+--
+--intset_disjunction A !! B : A !! B
+--
+CREATE FUNCTION intset_disjunction(intSet,intSet)
+   RETURNS intSet
+   AS '_OBJWD_/intSet'
+   LANGUAGE C IMMUTABLE STRICT;
+
+
+CREATE OPERATOR !! (
+   leftarg = intSet,
+   rightarg = intSet,
+   procedure = intset_disjunction
+);
+
+--
+--intset_difference A - B : A - B
+--
+CREATE FUNCTION intset_difference(intSet,intSet)
+   RETURNS intSet
+   AS '_OBJWD_/intSet'
+   LANGUAGE C IMMUTABLE STRICT;
+
+
+CREATE OPERATOR - (
+   leftarg = intSet,
+   rightarg = intSet,
+   procedure = intset_difference
+);
+

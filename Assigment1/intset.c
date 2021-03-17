@@ -1,5 +1,5 @@
 /*
- * src/tutorial/complex.c
+ * src/tutorial/intset.c
  *
  ******************************************************************************
   This file contains routines that can be bound to a Postgres backend and
@@ -76,7 +76,6 @@ static bool check_valid(char *str){
 
 static void input(char *input_list, intSet *result){
     int temp=0;
-    int digit=0; // digits of temp
     int i=0;
     int count=1; //number has been inserted
     int m=0;
@@ -88,8 +87,7 @@ static void input(char *input_list, intSet *result){
     for(i=0;i<strlen(input_list);i++){
         if (input_list[i]>='0' && input_list[i]<='9'){
             if(input_list[i]!='0' ||temp!=0){
-                temp=(int)(temp*pow(10,digit)+(input_list[i]-'0'));
-                digit++;
+                temp=(int)(temp*10 +(input_list[i]-'0'));
             }
 
         } else if (input_list[i]==',' || input_list[i]=='}'){
@@ -102,7 +100,6 @@ static void input(char *input_list, intSet *result){
                 result->list[count] = temp;
                 count++;
                 temp = 0;
-                digit = 0;
             }else {temp=0;}
         }
     }
@@ -125,7 +122,10 @@ PG_FUNCTION_INFO_V1(intset_in);
 
 Datum
 intset_in(PG_FUNCTION_ARGS)
-{
+{   
+    int i = 0;
+    int count=1;
+    intSet *L=NULL;
     char	   *str = PG_GETARG_CSTRING(0);
     str = trim(str);
     if(!check_valid(str)){
@@ -135,9 +135,8 @@ intset_in(PG_FUNCTION_ARGS)
                                 "intSet", str)));
 
     }
-    int i = 0;
-    int count=1;
-    intSet *L=NULL;
+    
+    
     for(i=0;i<strlen(str);i++){
         if (str[i]==',') count++;
     }
@@ -166,9 +165,9 @@ intset_out(PG_FUNCTION_ARGS)
     char	   *result;
     char *output;
     int i=0;
-    char str[25];
+    char str[32];
     int num = L->list[0];
-    result = (char *)malloc(sizeof(char)*3+sizeof(char)*33*num);
+    result = (char *)malloc(sizeof(char)*3+sizeof(char)*12*num);
 
     if(L->list[0]==0){
         sprintf(result,"{");
@@ -294,10 +293,11 @@ intset_eq(PG_FUNCTION_ARGS)
 {
     intSet    *A = (intSet *) PG_GETARG_POINTER(0);
     intSet    *B = (intSet *) PG_GETARG_POINTER(1);
+    int i=1;
     bool result = false;
     if(A->list[0]!=B->list[0])
         PG_RETURN_BOOL(result);
-    int i=1;
+    
     for(i=1;i<=A->list[0];i++){
         if(A->list[i]!=B->list[i])
             PG_RETURN_BOOL(result);
@@ -312,12 +312,12 @@ PG_FUNCTION_INFO_V1(intset_neq);
 
 Datum
 intset_neq(PG_FUNCTION_ARGS)
-{
+{   int i=1;
     intSet    *A = (intSet *) PG_GETARG_POINTER(0);
     intSet    *B = (intSet *) PG_GETARG_POINTER(1);
     if(A->list[0]!=B->list[0])
         PG_RETURN_BOOL(true);
-    int i=1;
+    
     for(i=1;i<=A->list[0];i++){
         if(A->list[i]!=B->list[i])
             PG_RETURN_BOOL(true);
@@ -336,20 +336,32 @@ intset_intersect(PG_FUNCTION_ARGS)
     intSet    *A = (intSet *) PG_GETARG_POINTER(0);
     intSet    *B = (intSet *) PG_GETARG_POINTER(1);
     intSet *L=NULL;
-    int i=0;
-    int j=0;
+    int i=1;
+    int j=1;
     int num=0;
     int count=0;
+    int max_A=A->list[0];  //number of A
+    int max_B=B->list[0];  //number of B
+    int temp_A=0;
+    int temp_B=0;
     num=A->list[0];
     L = (intSet *) palloc(VARHDRSZ + sizeof(int)*(num));
     SET_VARSIZE(L,VARHDRSZ + sizeof(int)*(num));
-    for(i=1;i<=A->list[0];i++){
-        for(j=1;j<=B->list[0];j++){
-            if(A->list[i]==B->list[j]){
-                count++;
-                L->list[count]=A->list[i];
-            }
+
+    while(i<=max_A && j<=max_B){
+        temp_A = A->list[i];
+        temp_B = B->list[j];
+        if(temp_A<temp_B){
+            i++;
         }
+        else if (temp_A>temp_B){
+            j++;
+        } else {
+	        count++;
+	        i++;
+            j++;
+            L->list[count]=temp_B;
+	    }
     }
     L->list[0]=count;
 
@@ -386,11 +398,16 @@ intset_union(PG_FUNCTION_ARGS)
             i++;
             L->list[count]=temp_A;
         }
-        else{
+        else if (temp_A>temp_B){
             count++;
             j++;
             L->list[count]=temp_B;
-        }
+        } else {
+	    count++;
+	    i++;
+            j++;
+            L->list[count]=temp_B;
+	}
     }
     if(i<=max_A){
         for(;i<=max_A;i++){

@@ -31,6 +31,33 @@ typedef struct intSet
  * Input/Output functions
  *****************************************************************************/
 
+static bool check_space_beteen(char *str){
+    int first = 0; //number index
+    int second =0; //number index
+    int comma = 0; //cooma index
+    int i =0; //index
+    int len = strlen(str);
+    for (i=0;i<len;i++){
+        if(str[i]>='0' && str[i]<='9'){
+            if(first>second){
+                second = i;
+            } else {
+                first = i;
+            }
+        }
+        
+        if(str[i]==','){
+            if(abs(first-second)>1 && first>i && second>i) 
+                return true;
+            comma = i;
+        }
+    }
+    if(abs(first-second)>1 && first>comma && second>comma) return true;
+    return false;
+
+}
+
+
 
 static char* trim(char *str){
     char *p1 = str;
@@ -127,6 +154,13 @@ intset_in(PG_FUNCTION_ARGS)
     int count=1;
     intSet *L=NULL;
     char	   *str = PG_GETARG_CSTRING(0);
+    if(check_space_beteen(str)){
+                ereport(ERROR,
+                (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+                        errmsg("invalid input syntax for type %s: \"%s\"",
+                                "intSet", str)));
+    }
+
     str = trim(str);
     if(!check_valid(str)){
         ereport(ERROR,
@@ -245,6 +279,10 @@ belong_left(PG_FUNCTION_ARGS)
     bool result = false;
     int i=1;
     int j=1;
+
+    if(child->list[0]==0)
+        PG_RETURN_BOOL(true);
+
     for(i=1;i<=child->list[0];i++){
         result = false;
         for(j=1;j<=father->list[0];j++){
@@ -270,6 +308,10 @@ belong_right(PG_FUNCTION_ARGS)
     bool result = false;
     int i=1;
     int j=1;
+
+    if(child->list[0]==0)
+        PG_RETURN_BOOL(true);
+
     for(i=1;i<=child->list[0];i++){
         result = false;
         for(j=1;j<=father->list[0];j++){
@@ -345,8 +387,8 @@ intset_intersect(PG_FUNCTION_ARGS)
     int temp_A=0;
     int temp_B=0;
     num=A->list[0];
-    L = (intSet *) palloc(VARHDRSZ + sizeof(int)*(num));
-    SET_VARSIZE(L,VARHDRSZ + sizeof(int)*(num));
+    L = (intSet *) palloc(VARHDRSZ + sizeof(int)*(num+1));
+    SET_VARSIZE(L,VARHDRSZ + sizeof(int)*(num+1));
 
     while(i<=max_A && j<=max_B){
         temp_A = A->list[i];
@@ -388,8 +430,8 @@ intset_union(PG_FUNCTION_ARGS)
     int temp_A=0;
     int temp_B=0;
     num=A->list[0]+B->list[0];
-    L = (intSet *) palloc(VARHDRSZ + sizeof(int)*(num));
-    SET_VARSIZE(L,VARHDRSZ + sizeof(int)*(num));
+    L = (intSet *) palloc(VARHDRSZ + sizeof(int)*(num+1));
+    SET_VARSIZE(L,VARHDRSZ + sizeof(int)*(num+1));
     while(i<=max_A && j<=max_B){
         temp_A = A->list[i];
         temp_B = B->list[j];
@@ -449,8 +491,8 @@ intset_disjunction(PG_FUNCTION_ARGS)
     int temp_A=0;
     int temp_B=0;
     num=A->list[0]+B->list[0];
-    L = (intSet *) palloc(VARHDRSZ + sizeof(int)*(num));
-    SET_VARSIZE(L,VARHDRSZ + sizeof(int)*(num));
+    L = (intSet *) palloc(VARHDRSZ + sizeof(int)*(num+1));
+    SET_VARSIZE(L,VARHDRSZ + sizeof(int)*(num+1));
     while(i<=max_A && j<=max_B){
         temp_A = A->list[i];
         temp_B = B->list[j];
@@ -493,7 +535,7 @@ intset_disjunction(PG_FUNCTION_ARGS)
 }
 
 
-//intset_difference A !! B : A !! B
+//intset_difference A - B : A - B
 
 PG_FUNCTION_INFO_V1(intset_difference);
 
@@ -511,8 +553,8 @@ intset_difference(PG_FUNCTION_ARGS)
     int max_B=B->list[0]; // number of B
     int flag = 0;//0:=not in B; 1:=in B
     num=A->list[0];
-    L = (intSet *) palloc(VARHDRSZ + sizeof(int)*(num));
-    SET_VARSIZE(L,VARHDRSZ + sizeof(int)*(num));
+    L = (intSet *) palloc(VARHDRSZ + sizeof(int)*(num+1));
+    SET_VARSIZE(L,VARHDRSZ + sizeof(int)*(num+1));
     for(i=1;i<=max_A;i++){
         flag=0;
         for(j=1;j<=max_B;j++){
